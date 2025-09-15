@@ -1,0 +1,10 @@
+CREATE TABLE votes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    members_id BIGINT NOT NULL,
+    date_id BIGINT NOT NULL,
+    vote_bool TINYINT(1) NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_votes_members FOREIGN KEY (members_id) REFERENCES members(id) ON DELETE CASCADE,
+    CONSTRAINT fk_votes_date FOREIGN KEY (date_id) REFERENCES date(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_vote (members_id, date_id)
+)

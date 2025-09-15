@@ -1,0 +1,8 @@
+CREATE TABLE calendars (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(32) NOT NULL UNIQUE,
+    owner_token VARCHAR(64) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, /*이건 뭐 자동이긴함*/
+    expires_at DATETIME NULL,
+) 
