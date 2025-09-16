@@ -247,6 +247,8 @@
 /* Details panel */
 .avail-cal__details {
   grid-area: details;
+  margin-top: 12px;
+  padding: 5px;
 }
 .details__title {
   margin: 4px 0 10px;
@@ -327,13 +329,11 @@
 /* Desktop layout */
 @media (min-width: 960px) {
   .avail-cal {
-    grid-template-areas: "header header" "calendar details";
+    grid-template-areas: "header header" "nav n" "calendar details";
+    gap:10px;
     grid-template-columns: 420px 1fr;
     align-items: start;
-  }
-  .avail-cal__calendar {
-    padding: 16px;
-  }
+  }  
   .avail-cal__rdp {
     --rdp-cell-size: 48px;
   }

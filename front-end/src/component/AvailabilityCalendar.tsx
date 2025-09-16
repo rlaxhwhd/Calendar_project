@@ -243,11 +243,13 @@ export default function AvailabilityCalendar() {
     return (
       <>
         <button
-          className={`rdp-day_button ${iv_selectedDate === iso?"rdp-selected":""}`}
+          className={`rdp-day_button ${
+            iv_selectedDate === iso ? "rdp-selected" : ""
+          }`}
           type="button"
           tabIndex={-1}
           aria-label="Sunday, August 31st, 2025"
-          onClick={()=>{
+          onClick={() => {
             if (modifiers.outside) return;
             onDayToggle?.(toLocalISO(day.date));
           }}
@@ -256,9 +258,9 @@ export default function AvailabilityCalendar() {
           {showBadge && (
             <span className="slot-badge">
               {Array.from({ length: count })
-                .slice(0, 2)
+                .slice(0, 3)
                 .map((_, i) => (
-                  <span key={i+iso} className="dot">
+                  <span key={i + iso} className="dot">
                     •
                   </span>
                 ))}
@@ -367,8 +369,12 @@ export default function AvailabilityCalendar() {
         <ul className="details__list">
           {slotsForSelected.map((slot, i) => (
             <li key={i} className="slot-card">
-              <div className="slot-card__label">Available</div>
-              <div className="slot-card__time">{slot.label}</div>
+              <div className="slot-card__label">
+                {slot.label ? slot.label : "입력되지 않은 일정"}
+              </div>
+              <div className="slot-card__time">
+                {slot.start} - {slot.end}
+              </div>
               <div className="slot-card__icon" aria-hidden />
             </li>
           ))}
