@@ -1,0 +1,343 @@
+:root {
+  --ac-bg: #ffffff;
+  --ac-text: #1f2937; /* slate-800-ish */
+  --ac-muted: #6b7280; /* gray-500 */
+  --ac-ring: #f59e0b; /* amber-500 */
+  --ac-ok: #16a34a; /* green-600 */
+  --ac-blocked-bg: #fdecec; /* soft red tint */
+  --ac-blocked: #dc2626; /* red-600 */
+  --ac-red: #f44336;
+  --ac-card: #fff5f5; /* light card tint */
+  --ac-border: #e5e7eb; /* gray-200 */
+  --ac-background: #e5e7eb57;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Pretendard;
+}
+
+.avail-cal {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 12px 1px;
+  color: var(--ac-text);
+  display: grid;
+  grid-template-areas:
+    "header"
+    "nav"
+    "calendar"
+    "details";
+  background: var(--ac-bg);
+}
+
+/*dots*/
+.slot-badge {
+  display: flex;
+  gap: 4px; /* 점 간격 */
+}
+
+.dot {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Header */
+.avail-cal__header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 0 10px;
+  column-gap: 8px;
+  margin-bottom: 12px;
+}
+
+.avail-cal__month {
+  margin: 0;
+  font-size: clamp(18px, 2.8vw, 22px);
+  font-weight: 700;
+}
+.cal-icons {
+  display: flex;
+  gap: 20px;
+  margin-left: auto;
+}
+
+.avail-cal__nav-btn {
+  appearance: none;
+  background: #fff;
+  width: 36px;
+  border: none;
+  height: 36px;
+  line-height: 1;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Calendar container */
+.avail-cal__calendar {
+  grid-area: calendar;
+}
+
+/* ── react-day-picker overrides (no default CSS import) ───────────── */
+.avail-cal__rdp {
+  /* root */
+  --rdp-cell-size: 42px;
+  --rdp-accent: var(--ac-ring);
+  --rdp-outline: var(--ac-ring);
+  margin: 0;
+  font-size: 14px;
+}
+
+.avail-cal__rdp .rdp-months {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.avail-cal__rdp .rdp-month {
+  width: 100%;
+  box-shadow: 0px 4px 7px 0px #c3c4c8;
+  background: var(--ac-background);
+  border-top: 1px solid #00000017;
+}
+
+/* 테이블 */
+.avail-cal__rdp .rdp-month_grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 6px;
+}
+
+/* 요일 헤더 */
+.avail-cal__rdp .rdp-weekday {
+  color: var(--ac-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-align: center;
+}
+.cal-swipe {
+  touch-action: pan-y; /* 세로 스크롤은 그대로, 가로는 우리가 처리 */
+  overscroll-behavior: contain; /* iOS 튐 완화(선택) */
+}
+
+/* 날짜 버튼(원형) — td.rdp-day 안의 button을 스타일링 */
+.avail-cal__rdp .rdp-day_button {
+  width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  border: none;
+  font-weight: 400;
+  cursor: pointer;
+  background: none;
+  justify-content: center;
+  transition: border-color 120ms ease, background-color 120ms ease,
+    color 120ms ease;
+  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr 12px;
+  place-items: center;
+  padding: 6px 0;
+}
+
+.rdp-selected {
+  border-color: var(--ac-ring) !important;
+  background: #f59e0bba !important;
+  border-radius: 10px;
+  color: white !important;
+}
+
+/* 상태 */
+.avail-cal__rdp .rdp-day_today .rdp-day_button {
+  box-shadow: inset 0 0 0 2px var(--ac-ring);
+}
+.avail-cal__rdp .rdp-day_selected .rdp-day_button {
+  outline: 2px solid var(--ac-ring);
+  outline-offset: 2px;
+}
+.avail-cal__rdp .rdp-day_disabled .rdp-day_button {
+  background: var(--ac-blocked-bg);
+  color: var(--ac-blocked);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.avail-cal__rdp .rdp-outside .rdp-day_button {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* 기본 캡션/네비 가리기(우리 헤더 사용 시) */
+.avail-cal__rdp .rdp-month_caption,
+.avail-cal__rdp .rdp-nav {
+  display: none;
+}
+
+/* 데스크톱에서 셀 키우기 */
+@media (min-width: 960px) {
+  .avail-cal__rdp {
+    --rdp-cell-size: 48px;
+  }
+}
+
+/* 캘린더 박스를 컨테이너로 선언 */
+.avail-cal__calendar {
+  container-type: inline-size;
+}
+
+/* 컨테이너 폭(cqw) 기준으로 셀 크기 계산 */
+.avail-cal__rdp {
+  /* 최소 34px, 보통은 컨테이너폭/7에서 여백 빼고, 최대 56px */
+  --rdp-cell-size: clamp(34px, (100cqw - 40px) / 7 - 4px, 56px);
+}
+
+/* 간격/패딩도 컨테이너 폭에 따라 조절 */
+.avail-cal__rdp .rdp-month_grid {
+  border-spacing: clamp(2px, 0.8cqw, 8px);
+}
+
+@container (max-width: 360px) {
+  .avail-cal__calendar {
+    padding-inline: 8px;
+  }
+}
+
+/* Hide DayPicker caption; we use our own header */
+.rdp-caption {
+  display: none;
+}
+
+/* Hoiday */
+.rdp-day.rdp-holiday > .rdp-day_button {
+  color: #b00020;
+  font-weight: 600;
+}
+.rdp-day.rdp-weekend > .rdp-day_button {
+  color: #a23;
+}
+.rdp-day.rdp-today > .rdp-day_button {
+  color: #16a34a;
+}
+
+/* Legend */
+.avail-cal__legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--ac-muted);
+  font-size: 12px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot--blocked {
+  background: var(--ac-blocked);
+}
+.legend-dot--ok {
+  background: var(--ac-ok);
+}
+.legend-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--ac-border);
+  display: inline-block;
+  margin: 0 4px;
+}
+
+/* Details panel */
+.avail-cal__details {
+  grid-area: details;
+}
+.details__title {
+  margin: 4px 0 10px;
+  font-size: 14px;
+  color: var(--ac-muted);
+}
+.details__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.slot-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 14px 44px 14px 14px;
+  background: var(--ac-card);
+  border: 1px solid var(--ac-border);
+}
+.slot-card__label {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #c2410c;
+}
+.slot-card__time {
+  font-size: 13px;
+  color: var(--ac-muted);
+}
+.slot-card__icon {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--ac-border);
+  background: #fff;
+}
+.slot-card__icon::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 8px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: var(--ac-ring);
+}
+
+.rdp-month_inline_cell {
+  text-align: left;
+  font-size: 14px;
+  padding-top: 12px;
+  font-weight: 400;
+}
+
+.nav-header {
+  display: flex;
+  grid-area: nav;
+  border-top: 1px solid rgba(0, 0, 0, 0.0901960784);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.0901960784);
+  justify-content: space-between;
+  .items {
+    text-align: center;
+    padding: 12px;
+    font-size: 14px;
+    color: #0000008f;
+  }
+  .nav-header__active {
+    color: var(--ac-red);
+    border-bottom: 1px solid var(--ac-red);
+  }
+}
+
+/* Desktop layout */
+@media (min-width: 960px) {
+  .avail-cal {
+    grid-template-areas: "header header" "calendar details";
+    grid-template-columns: 420px 1fr;
+    align-items: start;
+  }
+  .avail-cal__calendar {
+    padding: 16px;
+  }
+  .avail-cal__rdp {
+    --rdp-cell-size: 48px;
+  }
+  .details__title {
+    font-size: 16px;
+  }
+}
