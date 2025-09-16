@@ -3,11 +3,13 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import { ToastContainer } from "react-toastify";
 import AvailabilityCalendar from "./component/AvailabilityCalendar";
+import LoginScreen from "./component/LoginScreen";
 
 export default function Root() {
   return (
-    <Routes>
-      <Route index element={<AvailabilityCalendar/>} />
+    <Routes>      
+      <Route index element={<LoginScreen/>} />
+      <Route path="/calendar" element={<AvailabilityCalendar/>} />
     </Routes>
   );
 }
