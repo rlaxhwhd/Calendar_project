@@ -1,6 +1,7 @@
 import { Main } from "@jsLib/class/Main";
 import { PublicdataHolidays } from "@jsLib/class/PublicdataHolidays";
 import { useSwipe } from "@jsLib/hooks/useSwipe";
+import axios from "axios";
 import { uniqueId } from "lodash";
 import React, { useRef, useState } from "react";
 import { DayPicker, CalendarDay, Modifiers } from "react-day-picker";
@@ -62,7 +63,8 @@ class CalendarMain extends Main {
     window.iv_month = date;
   }
   public iv_blocked: Date[]; // blocked
-  public iv_selectedDate: string | null; // selectedDate
+  public iv_selectedDate: string | null;
+  public iv_selectedDates: Map<string, any>;
   public iv_daySlots: Record<string, AvailabilitySlot[]>; // daySlots
 
   constructor() {
@@ -74,6 +76,7 @@ class CalendarMain extends Main {
     this.iv_month = new Date(now.getFullYear(), now.getMonth(), 1);
     this.iv_blocked = [];
     this.iv_selectedDate = null;
+    this.iv_selectedDates = new Map<string, any>();
     this.iv_daySlots = iv_daySlots;
 
     // 최초 월의 공휴일 동기화
@@ -92,9 +95,14 @@ class CalendarMain extends Main {
 
   /** 기존: onDayToggle */
   public im_onDayToggle = (dateISO: string) => {
-    // 선택 토글/차단 토글 로직은 서비스 정책에 맞게.
-    // 여기서는 "선택 날짜"만 토글, 차단은 별도 메서드로 분리.
+    // 선택된 날짜가 이미 있으면 삭제, 없으면 추가
     this.iv_selectedDate = this.iv_selectedDate === dateISO ? null : dateISO;
+    if (this.iv_selectedDates.has(dateISO)) {
+      this.iv_selectedDates.delete(dateISO);
+    } else {
+      this.iv_selectedDates.set(dateISO, true); // 필요하면 true 대신 다른 데이터 저장 가능
+    }
+
     this.im_forceRender();
   };
 
@@ -191,6 +199,15 @@ class CalendarMain extends Main {
     const [y, m, d] = s.split("-").map(Number);
     return new Date(y, (m as number) - 1, d);
   }
+
+  /**axios */
+  public async im_SendSelectDate() {
+    const selectedDates = [...this.iv_selectedDates.keys()]; // ["2025-10-01", "2025-10-02", ...]
+
+    await axios.post("/test/test/test/test", {
+      selectedDates: selectedDates, 
+    });
+  }
 }
 
 export const toLocalISO = (d: Date) => {
@@ -215,7 +232,7 @@ export default function AvailabilityCalendar() {
 
   const month = lv_Obj.month;
   const blocked = lv_Obj.iv_blocked;
-  const selectedDate = lv_Obj.iv_selectedDate;
+  const selectedDates = lv_Obj.iv_selectedDates;
   const daySlots = lv_Obj.iv_daySlots;
 
   const onDayToggle = lv_Obj.im_onDayToggle;
@@ -229,22 +246,21 @@ export default function AvailabilityCalendar() {
   });
   const weekendMatcher = { dayOfWeek: [0, 6] }; // 일, 토
 
-  const slotsForSelected: AvailabilitySlot[] = selectedDate
-    ? daySlots?.[selectedDate] ?? []
+  const slotsForSelected: AvailabilitySlot[] = selectedDates
+    ? [...selectedDates.keys()].flatMap((date) => daySlots?.[date] ?? [])
     : [];
 
   const DayWithCount = (props: { day: CalendarDay; modifiers: Modifiers }) => {
     const { day, modifiers } = props;
     const iso = toLocalISO(day.date);
     const count = iv_daySlots[iso]?.length ?? 0;
-    const iv_selectedDate = lv_Obj.iv_selectedDate;
 
     const showBadge = count > 0 && !modifiers.outside;
     return (
       <>
         <button
           className={`rdp-day_button ${
-            iv_selectedDate === iso ? "rdp-selected" : ""
+            lv_Obj.iv_selectedDates.has(iso) ? "rdp-selected" : ""
           }`}
           type="button"
           tabIndex={-1}
@@ -352,9 +368,10 @@ export default function AvailabilityCalendar() {
             holiday: blocked,
             weekend: weekendMatcher,
             today: lv_Obj.today,
-            selectedDate: selectedDate
-              ? parseLocalISO(selectedDate)
-              : undefined,
+            selectedDates:
+              selectedDates && selectedDates.size > 0
+                ? [...selectedDates.keys()].map((date) => parseLocalISO(date))
+                : [],
           }}
           modifiersClassNames={{
             daySlots: "rdp-dayslots",
@@ -365,7 +382,9 @@ export default function AvailabilityCalendar() {
         />
       </div>
       <aside className="avail-cal__details" aria-live="polite">
-        <h3 className="details__title">{selectedDate ? selectedDate : ""}</h3>
+        <h3 className="details__title">
+          {lv_Obj.iv_selectedDate ? lv_Obj.iv_selectedDate : ""}
+        </h3>
         <ul className="details__list">
           {slotsForSelected.map((slot, i) => (
             <li key={i} className="slot-card">
@@ -380,6 +399,7 @@ export default function AvailabilityCalendar() {
           ))}
         </ul>
       </aside>
+      <button className="button-light" onClick={()=>{lv_Obj.im_SendSelectDate()}}>선택 날짜 전송</button>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { ToastContainer } from "react-toastify";
 import AvailabilityCalendar from "./component/AvailabilityCalendar";
 import LoginScreen from "./component/LoginScreen";
+import "./index.scss";
 
 export default function Root() {
   return (
