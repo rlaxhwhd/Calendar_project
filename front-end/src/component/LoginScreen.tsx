@@ -1,5 +1,6 @@
 import React from "react";
 import "./LoginScreen.scss";
+import { GoogleBtn } from "./Google";
 
 export default function NicknameScreen() {
   return (
@@ -10,7 +11,9 @@ export default function NicknameScreen() {
       </header>
 
       <section className="form">
-        <label htmlFor="nickname" className="label">닉네임</label>
+        <label htmlFor="nickname" className="label">
+          닉네임
+        </label>
 
         <div className="inputWrap">
           <input
@@ -38,10 +41,18 @@ export default function NicknameScreen() {
       </section>
 
       <footer className="footer">
-        <button onClick={()=>{
-            window.location.href="/calendar"
-        }} type="button" className="primaryBtn">계속</button>
+        <GoogleBtn state="login"/>
+        <button
+          onClick={() => {
+            window.location.href = "/calendar";
+          }}
+          type="button"
+          className="primaryBtn"
+        >
+          계속
+        </button>
       </footer>
     </main>
   );
 }
+

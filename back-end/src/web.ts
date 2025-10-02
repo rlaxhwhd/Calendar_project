@@ -88,8 +88,8 @@ console.log(
     )
 );
 
-const server = app.listen(3002, () => {
-  console.log(`Example app listening on port ${3002}`);
+const server = app.listen(3004, () => {
+  console.log(`Example app listening on port ${3004}`);
 });
 
 server.keepAliveTimeout = 300; // Keep-Alive 연결 제한 시간
