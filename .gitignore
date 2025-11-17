@@ -144,3 +144,10 @@ out
 back-end/src/db.ts
 back-end/dist/db.js
 back-end/dist/db.js.map
+
+
+#back-end
+back-end/node_modules
+back-end/logs
+back-end/.env
+back-end/build
