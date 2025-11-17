@@ -1,0 +1,40 @@
+import { AppError } from './AppError';
+import { ErrorCode, HttpStatus } from './enums';
+
+export const Errors = {
+  BadRequest: (message = '잘못된 요청입니다.', details?: any) =>
+    new AppError(message, HttpStatus.BAD_REQUEST, {
+      errorCode: ErrorCode.INVALID_INPUT,
+      details,
+    }),
+
+  NotFound: (message = '요청하신 리소스를 찾을 수 없습니다.', errorCode?: string, details?: any) =>
+    new AppError(message, HttpStatus.NOT_FOUND, {
+      errorCode: errorCode ?? ErrorCode.USER_NOT_FOUND,
+      details,
+    }),
+
+  Unauthorized: (message = '인증이 필요합니다.') =>
+    new AppError(message, HttpStatus.UNAUTHORIZED, {
+      errorCode: ErrorCode.AUTH_REQUIRED,
+    }),
+
+  Internal: (message = '서버 내부 오류가 발생했습니다.', details?: any) =>
+    new AppError(message, HttpStatus.INTERNAL, {
+      isOperational: false,
+      details,
+    }),
+
+  ValidationError: (message = '입력값 검증에 실패했습니다.', details?: any) =>
+    new AppError(message, HttpStatus.BAD_REQUEST, {
+      errorCode: ErrorCode.VALIDATION_ERROR,
+      details,
+    }),
+
+  Forbidden: (message = '접근 권한이 없습니다.') =>
+    new AppError(message, HttpStatus.FORBIDDEN, {
+      errorCode: ErrorCode.FORBIDDEN,
+    }),
+};
+
+export { AppError } from './AppError';
