@@ -1,0 +1,7 @@
+# back-end 폴더 안의 모든 텍스트 파일은
+# 무조건 LF (리눅스) 방식으로 통일
+back-end/** text=auto eol=lf
+
+# front-end 폴더는 건드리지 말고
+# Git의 기본 자동 변환 기능을 사용
+front-end/** text=auto

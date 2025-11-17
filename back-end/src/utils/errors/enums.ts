@@ -1,0 +1,20 @@
+// src/utils/errors/enums.ts
+export enum HttpStatus {
+  OK = 200,
+  CREATED = 201,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  CONFLICT = 409,
+  INTERNAL = 500,
+}
+
+export enum ErrorCode {
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  INVALID_INPUT = 'INVALID_INPUT',
+  AUTH_REQUIRED = 'AUTH_REQUIRED',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  FORBIDDEN = 'FORBIDDEN',
+  // 필요에 따라 추가
+}

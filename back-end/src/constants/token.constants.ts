@@ -1,0 +1,11 @@
+// 방장용 Access Token 수명: 15분
+export const MAIN_TOKEN_EXPIRES_IN = '15m';
+
+// 임시 토큰 수명: 10분
+export const SIGNUP_TOKEN_EXPIRES_IN = '10m';
+
+// Refresh Token 수명: 7일
+export const REFRESH_TOKEN_EXPIRES_IN = '7d';
+
+// refreshToken의 prefix
+export const REFRESH_TOKEN_PREFIX = 'refresh_token:';
