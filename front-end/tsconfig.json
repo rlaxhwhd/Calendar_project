@@ -142,7 +142,7 @@
       "@allType": ["../back-end/src/all_Types.ts"],
       "@allStore": ["../back-end/src/all_Store.ts"],
       "@BackEnd/*": ["../back-end/*"],
-      "@img": ["src/img"]
+      "@img/*": ["src/img/*"]
     },
 
     "noImplicitThis": true /* Enable error reporting when `this` is given the type `any`. */,

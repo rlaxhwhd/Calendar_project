@@ -4,7 +4,8 @@
     "build": "tsc --project tsconfig.json",
     "start": "pm2 start ./dist/web.js --name tooniz",
     "stop": "pm2 stop tooniz",
-    "reload": "pm2 reload tooniz"
+    "reload": "pm2 reload tooniz",
+    "docker:up": "docker compose -f docker-compose.yml up --build"
   },
   "author": "hdr",
   "license": "ISC",

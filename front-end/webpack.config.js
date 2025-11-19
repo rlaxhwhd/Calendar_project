@@ -5,6 +5,9 @@ const base = require("./webpack.base");
 
 module.exports = merge(base, {
   entry: { index: "./src/index.tsx" },
+  devServer: {
+    historyApiFallback: true,
+  },
   output: {
     path: path.resolve(__dirname, "../back-end/build"),
     filename: "index.js",
