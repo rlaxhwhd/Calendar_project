@@ -2,6 +2,7 @@ import React from "react";
 import "./MainLanding.scss";
 import TentImage from "@img/tent_clean.png";
 import FireImage from "@img/fire.png";
+import { useGoogleOAuthSignIn } from "@jsLib/hooks/useGoogleOAuth";
 
 const bubbles = [
   { icon: "🍆", text: "너무 굶어서 그래. 밥부터 먹어" },
@@ -10,6 +11,8 @@ const bubbles = [
 ];
 
 export default function MainLanding() {
+  const lf_login_google = useGoogleOAuthSignIn({ state:"login" });
+  const lf_signup_google = useGoogleOAuthSignIn({ state:"sign_up" });
   return (
     <div className="mainLanding">
       <section className="mainLanding__card" aria-label="mainPage onboarding">
@@ -42,11 +45,11 @@ export default function MainLanding() {
           <img src={TentImage} alt="캠핑 텐트" />
         </div>
 
-        <button type="button" className="mainLanding__primary">
+        <button onClick={lf_signup_google} type="button" className="mainLanding__primary">
           새롭게 시작하기
         </button>
 
-        <button type="button" className="mainLanding__secondary">
+        <button onClick={lf_login_google} type="button" className="mainLanding__secondary">
           기존 계정으로 로그인
         </button> 
       </section>

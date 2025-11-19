@@ -1,5 +1,6 @@
 import React from "react";
 import "./Google.scss";
+import { useGoogleOAuthSignIn } from "../hooks/useGoogleOAuth";
 
 export function Google_get_access_token() {
   function handleRedirectCallback(): void {
@@ -14,7 +15,7 @@ export function Google_get_access_token() {
     console.log("Token Type:", token_type);
     console.log("Expires In:", expires_in);
     console.log("State:", state);    
-    window.opener.location.href = "/main";
+    window.opener.location.href = "/calendar";
     window.close();
   }
 
@@ -39,67 +40,16 @@ export function Google_get_access_token() {
   return <></>;
 }
 
-export function GoogleBtn(props: { state: "login" | "sign_up" }) {
-  function lf_oauthSignIn_google() {
-    var screenWidth = window.screen.width;
-    var screenHeight = window.screen.height;
+type GoogleBtnProps = { state: "login" | "sign_up" };
 
-    var width = 650;
-    var height = 800;
-
-    // 창의 가운데 위치 계산
-    var left = (screenWidth - width) / 2;
-    var top = (screenHeight - height) / 2;
-
-    var newWindow = window.open(
-      "",
-      "_blank",
-      "width=" +
-        width +
-        ", height=" +
-        height +
-        ", left=" +
-        left +
-        ", top=" +
-        top
-    );
-
-    var oauth2Endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
-
-    var form = document.createElement("form");
-    form.setAttribute("method", "GET");
-    form.setAttribute("action", oauth2Endpoint);
-
-    var params = {
-      client_id:
-        "794723824545-tnhvhech192p9tlpdf4b031j70bvsnoa.apps.googleusercontent.com",
-      redirect_uri: `${window.origin}/login/google_signup`,
-      response_type: "token",
-      scope: "email profile",
-      state: props.state,
-    };
-
-    for (var p in params) {
-      var input = document.createElement("input");
-      input.setAttribute("type", "hidden");
-      input.setAttribute("name", p);
-
-      //@ts-ignore
-      input.setAttribute("value", params[p]);
-      form.appendChild(input);
-    }
-
-    newWindow?.document.body.appendChild(form);
-    form.submit();
-  }
+export function GoogleBtn({ state }: GoogleBtnProps) {
+  const lf_oauthSignIn_google = useGoogleOAuthSignIn({ state });
 
   return (
     <button
       type="submit"
       style={{ border: "none", borderRadius: "5px", padding: "10px" }}
-      onClick={() => {
-        lf_oauthSignIn_google();
-      }}
+      onClick={lf_oauthSignIn_google}
       className="gbtn"
     >
       <svg
@@ -129,7 +79,7 @@ export function GoogleBtn(props: { state: "login" | "sign_up" }) {
         <script />
       </svg>
       <span className="text"></span>
-      구글 계정으로 {props.state === "sign_up" ? "회원가입" : "로그인"}하기
+      구글 계정으로 {state === "sign_up" ? "회원가입" : "로그인"}하기
     </button>
   );
 }
