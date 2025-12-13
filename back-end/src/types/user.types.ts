@@ -1,11 +1,18 @@
+import { PoolConnection } from 'mysql2/promise';
+
 import { CreateUserInput, User } from '../models';
 import { OAuthCallbackResponse } from './auth.types';
 import { TokenPair } from './token.types';
 
 export interface IUserRepository {
-  findByOauthId(provider: 'google' | 'kakao', oauthId: string): Promise<User | null>;
-  findUserInfoByUuid(userUuid: string): Promise<User>;
-  createUser(userData: CreateUserInput): Promise<number>;
+  findByOauthId(
+    provider: 'google' | 'kakao',
+    oauthId: string,
+    connection?: PoolConnection
+  ): Promise<User | null>;
+  findUserInfoByUuid(userUuid: string, connection?: PoolConnection): Promise<User>;
+  getIdUsingUuid(userUuid: string, connection?: PoolConnection): Promise<number>;
+  createUser(userData: CreateUserInput, connection?: PoolConnection): Promise<number>;
 }
 
 export interface IAuthService {

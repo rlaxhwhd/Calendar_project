@@ -1,2 +1,2 @@
-export * from '../infrastructure/redisBreaker';
+export * from './redisBlacklist.repository';
 export * from './user.repository';

@@ -8,7 +8,7 @@ const pool = mysql.createPool({
   password: env.DB_USER_PASSWORD,
   database: env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: env.DB_CONNECTION_LIMIT,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
@@ -25,18 +25,18 @@ export async function connectDatabaseWithRetry(retries = 5, initialDelayMs = 200
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await pool.getConnection();
-      console.log('✅ 데이터베이스 연결 성공');
+      console.log('데이터베이스 연결 성공');
       connection.release();
       return;
     } catch (err) {
       console.error(
-        `❌ 데이터베이스 연결 실패. ${delay / 1000}초 후 재시도합니다... (${i + 1}/${retries})`,
+        `데이터베이스 연결 실패. ${delay / 1000}초 후 재시도합니다... (${i + 1}/${retries})`,
         err
       );
 
       // 마지막 재시도도 실패한 경우
       if (i === retries - 1) {
-        console.error('🚨 최대 재시도 횟수를 초과했습니다. 프로세스를 종료합니다.');
+        console.error('최대 재시도 횟수를 초과했습니다. 프로세스를 종료합니다.');
         process.exit(1);
       }
 
@@ -53,9 +53,9 @@ export async function connectDatabaseWithRetry(retries = 5, initialDelayMs = 200
 export async function closeDatabaseConnection() {
   try {
     await pool.end();
-    console.log('💤 데이터베이스 연결 해제 완료');
+    console.log('데이터베이스 연결 해제 완료');
   } catch (err) {
-    console.error('❌ 데이터베이스 연결 해제 중 오류 발생:', err);
+    console.error('데이터베이스 연결 해제 중 오류 발생:', err);
   }
 }
 

@@ -1,24 +1,28 @@
-import { REFRESH_TOKEN_EXPIRES_IN, REFRESH_TOKEN_PREFIX } from '../constants/token.constants';
+import { GRACE_PERIOD, REFRESH_TOKEN_EXPIRES_IN } from '../constants/token.constants';
 import { logger } from '../middlewares/logger';
 import {
-  IRedisBreaker,
+  IRedisBlacklistRepository,
   ITokenService,
+  MainTokenPayload,
+  ParticipantTokenPayload,
   RefreshTokenPayload,
   SignupTokenPayload,
   TokenPair,
+  UserTokenPayload,
 } from '../types/token.types';
 import { Errors } from '../utils/errors';
 import * as jwt from '../utils/jwt';
 import { toSeconds } from '../utils/timeConverter';
 
 export class TokenService implements ITokenService {
-  constructor(private redisBreaker: IRedisBreaker) {}
+  constructor(private redisBlacklist: IRedisBlacklistRepository) {}
 
   /*
-    퍼사드 패턴으로 호출한 유틸 메서드로 반환 --------------------------------
+    토큰에 대한 단일 책임을 위해 퍼사드 패턴으로 jwt 유틸 메서드 호출 후 반환 --------------------------------
 */
 
   // 회원가입 토큰----------------------------------------
+
   public verifySignupToken(token: string) {
     return jwt.verifySignupToken(token);
   }
@@ -27,46 +31,66 @@ export class TokenService implements ITokenService {
     return jwt.generateSignupToken(payload, expiresIn);
   }
 
+  // accesstoken (메인토큰) --------------------------------
+
+  public verifyMainToken(token: string): MainTokenPayload {
+    return jwt.verifyMainToken(token);
+  }
+
+  public verifyUserToken(token: string): UserTokenPayload {
+    return jwt.verifyUserToken(token);
+  }
+
+  // 참가자 토큰 ----------------------------------------------------
+
+  public generateParticipantToken(payload: ParticipantTokenPayload, expiresIn?: string): string {
+    return jwt.generateParticipantToken(payload, expiresIn);
+  }
+
+  public verifyParticipantToken(token: string): ParticipantTokenPayload {
+    return jwt.verifyParticipantToken(token);
+  }
+
   /*
     리프레쉬 토큰 -----------------------------------------------------------------------
 */
-  public async generateRefreshToken(
-    sub: string,
-    expiresIn: string = REFRESH_TOKEN_EXPIRES_IN
-  ): Promise<string> {
+  public async generateRefreshToken(sub: string, expiresIn: string = REFRESH_TOKEN_EXPIRES_IN) {
     try {
-      const { token, tokenId, expiresInSeconds } = jwt.signRefreshToken(sub, expiresIn);
+      const token = jwt.signRefreshToken(sub, expiresIn);
 
-      // Redis에 저장 (토큰 무효화를 위해)
-      const redisKey = `${REFRESH_TOKEN_PREFIX}${tokenId}`;
-      const userTokenSetKey = `user_tokens:${sub}`;
-
-      await Promise.all([
-        this.redisBreaker.safeSetex(redisKey, expiresInSeconds, sub),
-        this.redisBreaker.safeSadd(userTokenSetKey, tokenId),
-        this.redisBreaker.safeExpire(userTokenSetKey, expiresInSeconds + toSeconds('1d')),
-      ]);
-
-      return token;
+      return token.token;
     } catch (err) {
       throw Errors.Internal('RefreshToken 생성중 오류 발생: ', err);
     }
   }
 
-  //  확장 리팩토링 예정 -------------------
   public async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
     const payload = jwt.verifyRefreshTokenSignature(token);
 
-    const redisKey = `${REFRESH_TOKEN_PREFIX}${payload.tokenId}`;
-    const storedSub = await this.redisBreaker.safeGet(redisKey);
+    const tokenRevokedAt = await this.redisBlacklist.isOnBlacklist(payload.tokenId).catch((err) => {
+      logger.error('리프레쉬 토큰 블랙리스트 확인 중 오류 발생:', err);
+      return null;
+    });
 
-    if (!storedSub) {
-      // 나중에 보안 강화 확장 리팩토링
-      throw Errors.Unauthorized('Refresh Token이 무효화되었거나 확인할 수 없습니다');
+    if (tokenRevokedAt !== null) {
+      // 초 단위 통일
+      const now = Math.floor(Date.now() / 1000);
+      const passedTime = now - tokenRevokedAt;
+
+      // 유예기간 판별(한 사용자의 같은 토큰을 이용한 다중요청 )
+      if (passedTime > GRACE_PERIOD) {
+        await this.revokeAllRefreshTokens(payload.sub);
+        throw Errors.Unauthorized('비정상적인 접근 감지: 블랙리스트 등록된 토큰');
+      }
     }
 
-    if (storedSub !== payload.sub) {
-      throw Errors.Unauthorized('Refresh Token이 무효화되었습니다');
+    if (payload.iat) {
+      const userRevokedAt = await this.redisBlacklist.getUserAndRevokedAt(payload.sub);
+
+      if (userRevokedAt && userRevokedAt >= payload.iat!) {
+        await this.revokeAllRefreshTokens(payload.sub);
+        throw Errors.Unauthorized('비정상적인 접근 감지: 블랙리스트 유저 완전차단');
+      }
     }
 
     return payload;
@@ -82,6 +106,9 @@ export class TokenService implements ITokenService {
     };
   }
 
+  /**
+   
+   */
   public async refreshAccessToken(refreshToken: string): Promise<TokenPair> {
     const payload = await this.verifyRefreshToken(refreshToken);
     const newTokenPair = await this.generateTokenPair(payload.sub);
@@ -96,44 +123,44 @@ export class TokenService implements ITokenService {
   }
 
   public async revokeRefreshToken(token: string): Promise<boolean> {
-    try {
-      const decoded = jwt.verifyRefreshTokenForRevoke(token);
+    const { sub, tokenId, role, exp, iat } = jwt.verifyRefreshTokenForRevoke(token);
+    // 초단위 통일
+    const now = Math.floor(Date.now() / 1000);
+    if (!exp) return false;
+    const expiresIn = exp - now;
 
-      const redisKey = `${REFRESH_TOKEN_PREFIX}${decoded.tokenId}`;
-      const userTokenSetKey = `user_tokens:${decoded.sub}`;
-
-      await Promise.all([
-        this.redisBreaker.safeDel(redisKey),
-        this.redisBreaker.safeSrem(userTokenSetKey, decoded.tokenId),
-      ]);
-
-      return true;
-    } catch (err) {
-      throw Errors.Internal('Refresh Token무효화 중 오류', err);
+    // 만료 토큰 처리
+    if (expiresIn <= 0) {
+      return false;
     }
+
+    // 이미 블랙리스트에 등록된 토큰은 verifyRefreshToken에서 처리됨
+    await this.redisBlacklist.addToBlacklist(tokenId, expiresIn, now.toString()).catch((err) => {
+      logger.error('리프레쉬 토큰 블랙리스트 추가 중 오류 발생:', err);
+      return false;
+    });
+
+    await this.redisBlacklist
+      .recordUserAndRevokedAt(sub, expiresIn, now.toString())
+      .catch((err) => {
+        logger.error('사용자 무효화 시간 기록 중 오류 발생:', err);
+        return false;
+      });
+
+    return true;
   }
 
   public async revokeAllRefreshTokens(userUuid: string): Promise<boolean> {
-    try {
-      const userTokenSetKey = `user_tokens:${userUuid}`;
-      const tokenIds = await this.redisBreaker.safeSmembers(userTokenSetKey);
+    // 초 단위 통일
+    const now = Math.floor(Date.now() / 1000);
 
-      if (!tokenIds || tokenIds.length === 0) {
-        logger.debug(`무효화 할 토큰 없음 (사용자: ${userUuid})`);
-        return true;
-      }
+    await this.redisBlacklist
+      .recordUserAndRevokedAt(userUuid, toSeconds(REFRESH_TOKEN_EXPIRES_IN), now.toString())
+      .catch((err) => {
+        logger.error('전체 리프레쉬 토큰 무효화 중 오류 발생:', err);
+        return false;
+      });
 
-      const allowListKeys = tokenIds.map((tokenId) => `${REFRESH_TOKEN_PREFIX}${tokenId}`);
-
-      await this.redisBreaker.safeDel(allowListKeys);
-      await this.redisBreaker.safeDel(userTokenSetKey);
-
-      logger.info(`모든 Refresh Token 무효화 완료 (사용자: ${userUuid})`);
-      return true;
-    } catch (error) {
-      logger.warn(`모든 Refresh Token 무효화 중 예외 발생 (사용자: ${userUuid}):`, error);
-      throw Errors.Internal('모든 refresh token무효화 실패', error);
-      return false;
-    }
+    return true;
   }
 }

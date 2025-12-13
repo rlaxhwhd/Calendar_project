@@ -10,7 +10,10 @@ export function validateDecodedToken(decoded: unknown): asserts decoded is Recor
 }
 
 //역할 검증
-export function validateRole(decoded: Record<string, unknown>, expectedRole: 'host'): void {
+export function validateRole(
+  decoded: Record<string, unknown>,
+  expectedRole: 'host' | 'guest'
+): void {
   if (!('role' in decoded) || decoded.role !== expectedRole) {
     throw Errors.Unauthorized(
       `잘못된 토큰 권한입니다. (필요: ${expectedRole}, 수신: ${decoded.role ?? '없음'})`
@@ -33,12 +36,10 @@ export function isGoogleProfileData(obj: unknown): obj is GoogleProfileData {
   );
 }
 
-//속성 추출
+//속성 추출 메서드
 export const extractProperty = {
-  //객체에서 키 값 추출
   get(decoded: Record<string, unknown>, key: string): unknown {
     if (!(key in decoded)) {
-      // 키 자체가 없는 경우
       throw Errors.Unauthorized(`토큰 페이로드에 필수 속성(${key})이 없습니다`);
     }
     return decoded[key];
@@ -49,6 +50,42 @@ export const extractProperty = {
     const value = this.get(decoded, key);
 
     if (typeof value !== 'string' || value.trim().length === 0) {
+      throw Errors.Unauthorized(`${propertyName}(${key})이(가) 토큰에 없거나 유효하지 않습니다`);
+    }
+    return value;
+  },
+
+  //키 문자열 추출 및 null 체크
+  nullableString(
+    decoded: Record<string, unknown>,
+    key: string,
+    propertyName: string
+  ): string | undefined {
+    const value = this.get(decoded, key);
+
+    if (value === undefined || value === null) {
+      return undefined;
+    }
+
+    if (typeof value !== 'string') {
+      throw Errors.Unauthorized(`${propertyName}(${key})의 형식이 잘못됐습니다`);
+    }
+    return value;
+  },
+
+  number(decoded: Record<string, unknown>, key: string, propertyName: string): number {
+    const value = this.get(decoded, key);
+
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw Errors.Unauthorized(`${propertyName}(${key})이(가) 토큰에 없거나 유효하지 않습니다`);
+    }
+    return value;
+  },
+
+  role(decoded: Record<string, unknown>, key: string, propertyName: string): 'host' | 'guest' {
+    const value = this.get(decoded, key);
+
+    if (value !== 'host' && value !== 'guest') {
       throw Errors.Unauthorized(`${propertyName}(${key})이(가) 토큰에 없거나 유효하지 않습니다`);
     }
     return value;

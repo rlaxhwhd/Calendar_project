@@ -2,6 +2,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 import { env } from '../config/env';
+import { TransactionManager } from '../infrastructure/transaction.manager';
 import { User } from '../models';
 import { CreateUserInput } from '../models';
 import {
@@ -93,33 +94,38 @@ export class AuthService implements IAuthService {
 
   /* private 메서드들 */
 
-  //기존유저 처리 메서드
+  /**신규유저 콜백가입(콜백 최종가입) */
   private async signupProcess(
     googleProfileData: GoogleProfileData,
     isTermsAgreed: boolean
   ): Promise<{ tokenPair: TokenPair; user: User }> {
-    // 사용자 생성
-    const newUserData: CreateUserInput = {
-      user_uuid: uuidv4(),
-      email: googleProfileData.email,
-      oauth_provider: 'google',
-      oauth_id: googleProfileData.oauth_id,
-      nickname: googleProfileData.name,
-      profile_image_url: googleProfileData.picture,
-      isTermsAgreed: isTermsAgreed,
-    };
+    return await TransactionManager.run(async (connection) => {
+      // 사용자 생성
+      const newUserData: CreateUserInput = {
+        user_uuid: uuidv4(),
+        email: googleProfileData.email,
+        oauth_provider: 'google',
+        oauth_id: googleProfileData.oauth_id,
+        nickname: googleProfileData.name,
+        profile_image_url: googleProfileData.picture,
+        isTermsAgreed: isTermsAgreed,
+      };
 
-    const affectedRows = await this.userRepository.createUser(newUserData);
+      const affectedRows = await this.userRepository.createUser(newUserData, connection);
 
-    if (affectedRows !== 1) {
-      throw Errors.Internal('유저 생성 실패');
-    }
+      if (affectedRows !== 1) {
+        throw Errors.Internal('유저 생성 실패');
+      }
 
-    const newUser = await this.userRepository.findUserInfoByUuid(newUserData.user_uuid);
-    // 토큰 페어 생성
-    const tokenPair: TokenPair = await this.tokenService.generateTokenPair(newUser.user_uuid);
+      const newUser = await this.userRepository.findUserInfoByUuid(
+        newUserData.user_uuid,
+        connection
+      );
+      // 토큰 페어 생성
+      const tokenPair: TokenPair = await this.tokenService.generateTokenPair(newUser.user_uuid);
 
-    return { tokenPair: tokenPair, user: newUser };
+      return { tokenPair: tokenPair, user: newUser };
+    });
   }
 
   private async handleExistingUser(user: User): Promise<ExistingUserResponse> {
@@ -132,7 +138,7 @@ export class AuthService implements IAuthService {
     return existingUserResponse;
   }
 
-  //신규 유저처리 메서드(콜백 가입)
+  /**신규 유저처리 메서드(콜백 가입, 회원가입토큰 발급)*/
   private async handlePendingNewUser(
     user: GoogleProfileData
   ): Promise<NewUserCallbackSignupResponse> {

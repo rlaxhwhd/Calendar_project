@@ -14,6 +14,7 @@ function toRefreshTokenPayload(decoded: unknown): RefreshTokenPayload {
 
   const subject = extractProperty.string(decoded, 'sub', '사용자 UUID');
   const tokenId = extractProperty.string(decoded, 'tokenId', '토큰 ID');
+  const exp = extractProperty.number(decoded, 'exp', '만료 시간');
 
   if (isRefreshToken(decoded) === false) {
     throw Errors.Unauthorized('유효하지 않은 Refresh Token입니다');
@@ -23,6 +24,7 @@ function toRefreshTokenPayload(decoded: unknown): RefreshTokenPayload {
     sub: subject,
     tokenId,
     role: 'host',
+    exp: exp,
   };
 }
 
@@ -66,7 +68,6 @@ export function verifyRefreshTokenSignature(token: string): RefreshTokenPayload 
 export function verifyRefreshTokenForRevoke(token: string): RefreshTokenPayload {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET, { ignoreExpiration: true });
-
     return toRefreshTokenPayload(decoded);
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {

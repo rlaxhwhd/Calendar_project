@@ -34,7 +34,7 @@ async function startServer() {
 
     setupGracefulShutdown(server);
   } catch (error) {
-    console.error('❌ Server startup failed:', error);
+    console.error('서버 구동 실패:', error);
     process.exit(1);
   }
 }

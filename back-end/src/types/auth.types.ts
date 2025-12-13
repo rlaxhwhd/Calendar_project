@@ -41,3 +41,13 @@ export type OAuthCallbackResponse =
   | ExistingUserResponse
   | NewUserCallbackSignupResponse
   | NewUserImmediateSignupResponse;
+
+export interface SafeUser {
+  user_uuid: string;
+  email: string;
+  oauth_provider: 'google' | 'kakao';
+  nickname: string;
+  profile_image_url: string;
+  isTermsAgreed: boolean;
+  created_at: Date;
+}

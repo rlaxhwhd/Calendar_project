@@ -1,18 +1,49 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { env } from '../config/env';
+import { tokenService } from '../containers/auth.container';
+import { MainTokenPayload, ParticipantTokenPayload } from '../types/token.types';
 import { Errors } from '../utils/errors';
 import { asyncHandler } from './errorHandler';
 
 export interface AuthRequest extends Request {
-  userId?: string;
-  userRole?: string;
+  userUuid: string;
+  userRole: 'host' | 'guest';
+  nickname?: string;
+}
+
+export interface UserRequest extends Request, MainTokenPayload {
+  userUuid: MainTokenPayload['sub'];
+  userRole: MainTokenPayload['role'];
+}
+
+export interface ParticipantRequest extends Request, ParticipantTokenPayload {
+  participantUuid: ParticipantTokenPayload['sub'];
+  userRole: ParticipantTokenPayload['role'];
+  nickname: ParticipantTokenPayload['nickname'];
+  calendarId: ParticipantTokenPayload['calendarId'];
+  userUuid?: ParticipantTokenPayload['userUuid'];
+}
+
+export function isAuthRequest(req: Request): req is AuthRequest & {
+  userUuid: string;
+  userRole: 'host' | 'guest';
+  nickname?: string;
+} {
+  return typeof req.userUuid === 'string' && (req.userRole === 'host' || req.userRole === 'guest');
+}
+
+export function isUserRequest(req: Request): req is UserRequest {
+  return typeof req.userUuid === 'string' && (req.userRole === 'host' || req.userRole === 'guest');
+}
+
+export function isParticipantRequest(req: Request): req is ParticipantRequest {
+  return typeof req.participantUuid === 'string' && typeof req.calendarId === 'string';
 }
 
 // JWT 토큰 검증
-export const authenticate = asyncHandler(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateUser = asyncHandler(
+  async (req: UserRequest, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -20,13 +51,41 @@ export const authenticate = asyncHandler(
         throw Errors.Unauthorized('인증 토큰이 필요합니다');
       }
 
-      const decoded = jwt.verify(token, env.JWT_SECRET) as {
-        userId: string;
-        role: string;
-      };
+      const decoded = tokenService.verifyMainToken(token);
 
-      req.userId = decoded.userId;
+      req.userUuid = decoded.sub;
       req.userRole = decoded.role;
+
+      next();
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        throw Errors.Unauthorized('토큰이 만료되었습니다');
+      } else if (error instanceof jwt.JsonWebTokenError) {
+        throw Errors.Unauthorized('유효하지 않은 토큰입니다');
+      } else {
+        throw error;
+      }
+    }
+  }
+);
+
+export const authenticateParticipant = asyncHandler(
+  async (req: ParticipantRequest, res: Response, next: NextFunction) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+
+      if (!token) {
+        throw Errors.Unauthorized('인증 토큰이 필요합니다');
+      }
+
+      const decoded = tokenService.verifyParticipantToken(token);
+
+      req.participantUuid = decoded.sub;
+      req.userRole = decoded.role;
+      req.nickname = decoded.nickname;
+      req.calendarId = decoded.calendarId;
+
+      req.userUuid = decoded.userUuid;
 
       next();
     } catch (error) {
@@ -63,10 +122,9 @@ export const optionalAuth = asyncHandler(
       const token = req.headers.authorization?.replace('Bearer ', '');
 
       if (token) {
-        const decoded = jwt.verify(token, env.JWT_SECRET) as {
-          userId: string;
-        };
-        req.userId = decoded.userId;
+        const decoded = tokenService.verifyMainToken(token);
+        req.userUuid = decoded.sub;
+        req.userRole = decoded.role;
       }
 
       next();

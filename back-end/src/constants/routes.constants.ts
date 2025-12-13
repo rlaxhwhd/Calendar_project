@@ -24,3 +24,31 @@ export const PROXY_ROUTES = {
   BASE: '/proxy',
   PUBLIC_DATA: '/publicdata',
 };
+
+//calendar 관련 접두사
+export const CALENDAR_ROUTES = {
+  BASE: '/calendars',
+
+  MY_CALENDAR_LIST: '/my',
+
+  // 캘린더 조회 수정 삭제
+  CALENDAR_SLUG: '/:slug',
+
+  CALENDAR_CLOSE: '/:slug/close',
+};
+
+export const PARTICIPANT_ROUTES = {
+  BASE: '/calendars/:slug/participants',
+
+  LOGIN: '/login',
+
+  DELETE_SELF: '/self',
+
+  DELETE_BY_HOST: '/:uuid',
+};
+
+export const VOTE_ROUTES = {
+  BASE: 'calendars/:slug/votes',
+
+  CHECK_VOTE: '/:participantId',
+};

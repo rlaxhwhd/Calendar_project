@@ -18,6 +18,7 @@ interface EnvConfig {
   GOOGLE_CLIENT_SECRET: string;
   BACKEND_URL: string;
   SIGNUP_MODE: string;
+  DB_CONNECTION_LIMIT: number;
 }
 
 function validateEnv(): EnvConfig {
@@ -37,13 +38,14 @@ function validateEnv(): EnvConfig {
     'GOOGLE_CLIENT_SECRET',
     'BACKEND_URL',
     'SIGNUP_MODE',
+    'DB_CONNECTION_LIMIT',
   ];
 
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
-      `❌ 필수 환경변수를 찾지 못했습니다: ${missing.join(', ')}\n` +
+      `필수 환경변수를 찾지 못했습니다: ${missing.join(', ')}\n` +
         `env파일을 다시 한 번 확인해주세요.`
     );
   }
@@ -64,6 +66,7 @@ function validateEnv(): EnvConfig {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
     BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:4000',
     SIGNUP_MODE: process.env.SIGNUP_MODE!,
+    DB_CONNECTION_LIMIT: parseInt(process.env.DB_CONNECTION_LIMIT!, 10),
   };
 }
 

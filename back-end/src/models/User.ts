@@ -12,7 +12,6 @@ export interface User {
   profile_image_url: string;
   isTermsAgreed: boolean;
   created_at: Date;
-  last_login_at: Date;
 }
 
 // INSERT용 타입 (id, timestamp 제외)

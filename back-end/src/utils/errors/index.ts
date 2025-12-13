@@ -35,6 +35,12 @@ export const Errors = {
     new AppError(message, HttpStatus.FORBIDDEN, {
       errorCode: ErrorCode.FORBIDDEN,
     }),
+
+  Conflict: (message = '이미 존재하는 리소스입니다.', details?: any) =>
+    new AppError(message, HttpStatus.CONFLICT, {
+      errorCode: ErrorCode.INVALID_INPUT,
+      details,
+    }),
 };
 
 export { AppError } from './AppError';

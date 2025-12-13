@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 
 import { env } from '../config/env';
 import { REFRESH_TOKEN_EXPIRES_IN } from '../constants/token.constants';
-import { OAuthCallbackResponse } from '../types/auth.types';
+import { User } from '../models';
+import { OAuthCallbackResponse, SafeUser } from '../types/auth.types';
 import { TokenPair } from '../types/token.types';
 import { IAuthService } from '../types/user.types';
 import { Errors } from '../utils/errors';
@@ -44,7 +45,7 @@ export class AuthController {
         message: '로그인 성공',
         isNewUser: oAuthCallbackResponse.type !== 'existingUser',
         token: oAuthCallbackResponse.token.accessToken,
-        user: oAuthCallbackResponse.user,
+        user: this.changeToSafeUser(oAuthCallbackResponse.user),
       });
     } catch (error) {
       next(error); // 에러 발생 시 errorHandler 미들웨어로 전달
@@ -67,7 +68,7 @@ export class AuthController {
       res.status(200).json({
         message: '회원가입 및 로그인 성공',
         token: signupResponse.tokenPair.accessToken,
-        user: signupResponse.user,
+        user: this.changeToSafeUser(signupResponse.user),
       });
     } catch (error) {
       next(error);
@@ -119,4 +120,16 @@ export class AuthController {
       next(error);
     }
   };
+
+  private changeToSafeUser(user: User): SafeUser {
+    return {
+      user_uuid: user.user_uuid,
+      email: user.email,
+      oauth_provider: user.oauth_provider,
+      nickname: user.nickname,
+      profile_image_url: user.profile_image_url,
+      isTermsAgreed: user.isTermsAgreed,
+      created_at: user.created_at,
+    };
+  }
 }
