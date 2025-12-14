@@ -212,7 +212,7 @@ export class ParticipantController {
    */
   public deleteParticipantSelf = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isParticipantRequest(req)) {
+      if (!isParticipantRequest(req)) {
         throw Errors.Internal('인증실패 혹은 잘못된 토큰');
       }
       const { slug } = req.params;
@@ -259,7 +259,7 @@ export class ParticipantController {
 
   public deleteParticipantAsHost = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isParticipantRequest(req)) {
+      if (!isParticipantRequest(req)) {
         throw Errors.Internal('인증실패 혹은 잘못된 토큰');
       }
       const { slug, uuid } = req.params;

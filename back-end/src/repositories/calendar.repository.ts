@@ -30,7 +30,7 @@ export class CalendarRepository implements ICalendarRepository {
 
     const [result] = await poolToUse.execute<ResultSetHeader>(
       `INSERT INTO calendars (slug, title, description, start_date, end_date, owner_id, expired_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [slug, title, description || null, start_date, end_date, owner_id, expired_at]
     );
 
@@ -220,7 +220,7 @@ export class CalendarRepository implements ICalendarRepository {
       is_closed: Boolean(row.is_closed),
       owner_id: row.owner_id,
       created_at: new Date(row.created_at),
-      expried_at: new Date(row.expired_at),
+      expired_at: new Date(row.expired_at),
     };
   }
 }

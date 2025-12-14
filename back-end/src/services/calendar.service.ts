@@ -1,4 +1,3 @@
-import { ParticipantTokenPayload } from '@jsLib/types/token.types';
 import crypto from 'crypto';
 import { randomUUID } from 'crypto';
 

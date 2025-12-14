@@ -1,10 +1,9 @@
-import { IUserService, UserService } from '@jsLib/services/user.service';
-
 import dbpool from '../config/database';
 import { redisClient } from '../config/redis';
 import { AuthController } from '../controllers/auth.controller';
 import { RedisBlacklistRepository, UserRepository } from '../repositories';
 import { AuthService, TokenService } from '../services';
+import { IUserService, UserService } from '../services/user.service';
 import { IRedisBlacklistRepository, ITokenService } from '../types/token.types';
 import { IAuthService, IUserRepository } from '../types/user.types';
 

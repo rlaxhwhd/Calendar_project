@@ -52,7 +52,7 @@ export function toParticipantTokenPayload(decoded: unknown): ParticipantTokenPay
   const nickname = extractProperty.string(decoded, 'nickname', '닉네임');
   const calendarId = extractProperty.string(decoded, 'calendarId', '캘린더 ID');
 
-  const user_uuid = extractProperty.nullableString(decoded, 'user_uuid', '사용자 UUID');
+  const user_uuid = extractProperty.nullableString(decoded, 'userUuid', '사용자 UUID');
 
   return {
     sub: subject,

@@ -31,6 +31,7 @@ export interface IParticipantService {
   getParticipantIdByUuid(uuid: string): Promise<number>;
   getParticipantUuidById(id: number): Promise<string>;
 
+  getParticipantUuidByUserIdAndCalendarId(id: number, calendar_id: number): Promise<string>;
   existsParticipantByUuid(uuid: string): Promise<boolean>;
 
   getParticipantsByCalendarId(calendarId: number): Promise<Participant[]>;
@@ -210,6 +211,12 @@ export class ParticipantService implements IParticipantService {
     return await this.participantRepository.existsByUuid(uuid);
   }
 
+  async getParticipantUuidByUserIdAndCalendarId(id: number, calendar_id: number): Promise<string> {
+    return await this.participantRepository.getParticipantUuidByUserIdAndCalendarId(
+      id,
+      calendar_id
+    );
+  }
   /**
    * 캘린더의 모든 참가자 조회
    */

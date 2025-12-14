@@ -17,6 +17,11 @@ export interface IParticipantRepository {
   existsByUuid(uuid: string, connection?: PoolConnection): Promise<boolean>;
   getIdUsingUuid(uuid: string, connection?: PoolConnection): Promise<number>;
   getUuidUsingId(id: number, connection?: PoolConnection): Promise<string>;
+  getParticipantUuidByUserIdAndCalendarId(
+    id: number,
+    calendar_id: number,
+    connection?: PoolConnection
+  ): Promise<string>;
   findUserGuestById(
     calendarId: number,
     userId: number,
@@ -80,7 +85,7 @@ export class ParticipantRepository implements IParticipantRepository {
     const poolToUse = connection || this.pool;
 
     const [rows] = await poolToUse.execute<RowDataPacket[]>(
-      'SELECT * FROM participants WHERE user_id = ?',
+      'SELECT * FROM participants WHERE id = ?',
       [id]
     );
 
@@ -165,7 +170,7 @@ export class ParticipantRepository implements IParticipantRepository {
     const poolToUse = connection || this.pool;
 
     const [rows] = await poolToUse.execute<RowDataPacket[]>(
-      'select user_id from participants where participant_uuid = ?',
+      'select id from participants where participant_uuid = ?',
       [uuid]
     );
 
@@ -173,14 +178,14 @@ export class ParticipantRepository implements IParticipantRepository {
       throw Errors.NotFound('유저 조회 실패');
     }
 
-    return rows[0].user_id;
+    return rows[0].id;
   }
 
   async getUuidUsingId(id: number, connection?: PoolConnection): Promise<string> {
     const poolToUse = connection || this.pool;
 
     const [rows] = await poolToUse.execute<RowDataPacket[]>(
-      'select user_id from participants where participant_uuid = ?',
+      'select participant_uuid from participants where id = ?',
       [id]
     );
 
@@ -188,9 +193,27 @@ export class ParticipantRepository implements IParticipantRepository {
       throw Errors.NotFound('유저 조회 실패');
     }
 
-    return rows[0].participant_id;
+    return rows[0].participant_uuid;
   }
 
+  async getParticipantUuidByUserIdAndCalendarId(
+    id: number,
+    calendar_id: number,
+    connection?: PoolConnection
+  ): Promise<string> {
+    const poolToUse = connection || this.pool;
+
+    const [rows] = await poolToUse.execute<RowDataPacket[]>(
+      'select participant_uuid from participants where user_id = ? and calendar_id = ?',
+      [id, calendar_id]
+    );
+
+    if (rows.length === 0) {
+      throw Errors.NotFound('유저 조회 실패');
+    }
+
+    return rows[0].participant_uuid;
+  }
   /**
    * 캘린더의 모든 참가자 조회
    */
@@ -262,7 +285,7 @@ export class ParticipantRepository implements IParticipantRepository {
     const poolToUse = connection || this.pool;
 
     const [result] = await poolToUse.execute<ResultSetHeader>(
-      'DELETE FROM participants WHERE user_id = ?',
+      'DELETE FROM participants WHERE id = ?',
       [id]
     );
 

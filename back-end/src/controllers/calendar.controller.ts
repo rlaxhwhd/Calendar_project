@@ -31,7 +31,7 @@ export class CalendarController {
    */
   public createCalendar = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isUserRequest(req)) {
+      if (!isUserRequest(req)) {
         throw Errors.Internal('인증 실패');
       }
       const userUuid = req.userUuid;
@@ -53,8 +53,8 @@ export class CalendarController {
         title,
         start_date,
         end_date,
-        description,
-        hostNickname
+        hostNickname,
+        description
       );
 
       const participantToken = await this.tokenService.generateParticipantToken({
@@ -91,7 +91,10 @@ export class CalendarController {
 
       const calendar = await this.calendarService.getCalendarBySlug(slug);
 
-      const hostUuid = await this.participantService.getParticipantUuidById(calendar.owner_id);
+      const hostUuid = await this.participantService.getParticipantUuidByUserIdAndCalendarId(
+        calendar.owner_id,
+        calendar.id
+      );
 
       res.status(200).json({
         calendar: this.changeToSafeCalendar(calendar, hostUuid),
@@ -107,7 +110,7 @@ export class CalendarController {
    */
   public getMyCalendars = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isUserRequest(req)) {
+      if (!isUserRequest(req)) {
         throw Errors.Internal('인증 실패');
       }
 
@@ -147,7 +150,7 @@ export class CalendarController {
    */
   public updateCalendar = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isParticipantRequest(req)) {
+      if (!isParticipantRequest(req)) {
         throw Errors.Internal('인증 실패');
       }
       const { slug } = req.params;
@@ -199,7 +202,7 @@ export class CalendarController {
    */
   public deleteCalendar = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isParticipantRequest(req)) {
+      if (!isParticipantRequest(req)) {
         throw Errors.Internal('인증 실패');
       }
       const { slug } = req.params;
@@ -237,7 +240,7 @@ export class CalendarController {
    */
   public closeCalendar = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (isParticipantRequest(req)) {
+      if (!isParticipantRequest(req)) {
         throw Errors.Internal('인증 실패');
       }
       const { slug } = req.params;
@@ -280,7 +283,7 @@ export class CalendarController {
       is_closed: calendar.is_closed,
       hostUuid: hostUuid,
       created_at: calendar.created_at,
-      expired_at: calendar.expried_at,
+      expired_at: calendar.expired_at,
     };
   }
 }

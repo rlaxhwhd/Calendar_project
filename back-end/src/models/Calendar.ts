@@ -12,7 +12,7 @@ export interface Calendar {
   is_closed: boolean; // 투표 마감 여부
   owner_id: number; // 방장 user ID
   created_at: Date;
-  expried_at: Date;
+  expired_at: Date;
 }
 
 export interface SafeCalendar {
