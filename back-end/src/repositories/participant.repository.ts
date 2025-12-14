@@ -52,9 +52,23 @@ export class ParticipantRepository implements IParticipantRepository {
 
     const { participant_uuid, calendar_id, role, nickname, color_code } = input;
 
-    const user_id = input.role === 'host' ? input.user_id : null;
+    let user_id: number | null;
+    let password_hash: string | null;
 
-    const password_hash = input.role === 'guest' ? input.password_hash : null;
+    if (role === 'host') {
+      user_id = input.user_id;
+      password_hash = null;
+    } else {
+      if ('password_hash' in input && input.password_hash !== undefined) {
+        user_id = null;
+        password_hash = input.password_hash;
+      } else if ('user_id' in input && input.user_id !== undefined) {
+        user_id = input.user_id;
+        password_hash = null;
+      } else {
+        throw Errors.BadRequest('게스트는 user_id 또는 password_hash 중 하나가 필요합니다');
+      }
+    }
 
     const [result] = await poolToUse.execute<ResultSetHeader>(
       `INSERT INTO participants (participant_uuid, calendar_id, user_id, role, nickname, password_hash, color_code)

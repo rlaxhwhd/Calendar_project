@@ -32,21 +32,26 @@ export class VoteController {
         throw Errors.Internal('인증실패 혹은 잘못된 토큰');
       }
       const { slug } = req.params;
-      const { selectedDates } = req.body;
+      const { selectedDates, voteType } = req.body;
 
-      const userUuid = req.participantUuid;
+      const userParticipantUuid = req.participantUuid;
       const userRole = req.userRole;
 
       if (!slug) {
         throw Errors.BadRequest('slug가 필요합니다');
       }
 
-      if (!userUuid || !userRole) {
+      if (!userParticipantUuid || !userRole) {
         throw Errors.Internal('인증 실패');
       }
 
       if (!selectedDates || !Array.isArray(selectedDates)) {
         throw Errors.BadRequest('selectedDates는 배열이어야 합니다');
+      }
+
+      const validTypes = ['available', 'unavailable', 'maybe'];
+      if (voteType && !validTypes.includes(voteType)) {
+        throw Errors.BadRequest('유효하지 않은 투표타입 입니다');
       }
 
       // 캘린더 조회
@@ -57,8 +62,17 @@ export class VoteController {
         throw Errors.BadRequest('마감된 캘린더에는 투표할 수 없습니다');
       }
 
+      const endDate = new Date(calendar.end_date);
+
+      const todayZero = new Date();
+      todayZero.setHours(0, 0, 0, 0);
+
+      if (todayZero > endDate) {
+        throw Errors.BadRequest('투표 기간이 종료되었습니다');
+      }
+
       // 참가자 인증
-      const participant = await this.participantService.getParticipantByUuid(userUuid);
+      const participant = await this.participantService.getParticipantByUuid(userParticipantUuid);
 
       // 캘린더 일치 확인
       if (participant.calendar_id !== calendar.id) {
@@ -66,15 +80,19 @@ export class VoteController {
       }
 
       // 투표 저장
-      const count = await this.voteService.submitVotes(participant.id, calendar.id, selectedDates);
+      const count = await this.voteService.submitVotes(
+        participant.id,
+        calendar.id,
+        selectedDates,
+        voteType
+      );
 
       // 실시간 투표 현황 조회 및 WebSocket 브로드캐스트
       const voteStatus = await this.voteService.getVoteStatusByCalendar(calendar.id);
       const io = getIO();
       io.to(slug).emit('voteUpdated', {
-        calendarId: calendar.id,
         calendarSlug: slug,
-        participantId: participant.id,
+        participantUuId: participant.participant_uuid,
         participantNickname: participant.nickname,
         voteStatus,
         timestamp: new Date().toISOString(),

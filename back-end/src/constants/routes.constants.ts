@@ -48,7 +48,7 @@ export const PARTICIPANT_ROUTES = {
 };
 
 export const VOTE_ROUTES = {
-  BASE: 'calendars/:slug/votes',
+  BASE: '/calendars/:slug/votes',
 
-  CHECK_VOTE: '/:participantId',
+  CHECK_VOTE: '/:participantUuid',
 };

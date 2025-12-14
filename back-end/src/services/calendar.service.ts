@@ -6,6 +6,7 @@ import { CALENDAR_GRACE_PERIOD } from '../constants/calendar.constants';
 import { TransactionManager } from '../infrastructure/transaction.manager';
 import { Calendar, CreateCalendarInput, UpdateCalendarInput } from '../models/Calendar';
 import { ICalendarRepository } from '../repositories/calendar.repository';
+import { IDateOptionRepository } from '../repositories/dateOption.repository';
 import { IParticipantRepository } from '../repositories/participant.repository';
 import { Errors } from '../utils/errors';
 
@@ -29,7 +30,8 @@ export interface ICalendarService {
 export class CalendarService implements ICalendarService {
   constructor(
     private calendarRepository: ICalendarRepository,
-    private participantRepository: IParticipantRepository
+    private participantRepository: IParticipantRepository,
+    private dateOptionRepository: IDateOptionRepository
   ) {}
 
   /**
@@ -140,6 +142,17 @@ export class CalendarService implements ICalendarService {
       };
 
       const calendar = await this.calendarRepository.create(input, con);
+
+      const dateList: string[] = [];
+      const currentDate = new Date(startDate);
+      const end = new Date(endDate);
+
+      while (currentDate <= end) {
+        dateList.push(currentDate.toISOString().split('T')[0]); // YYYY-MM-DD
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      await this.dateOptionRepository.createBatch(calendar.id, dateList, con);
 
       const participantUuid = randomUUID();
 

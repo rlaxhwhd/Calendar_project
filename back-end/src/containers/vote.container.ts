@@ -9,7 +9,7 @@ import { participantService } from './participant.container';
 const db = pool;
 
 // Repositories
-const dateOptionRepository: IDateOptionRepository = new DateOptionRepository(db);
+export const dateOptionRepository: IDateOptionRepository = new DateOptionRepository(db);
 const voteRepository: IVoteRepository = new VoteRepository(db);
 
 // Services

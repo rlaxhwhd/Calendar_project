@@ -1,11 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import {
-  AuthRequest,
-  isAuthRequest,
-  isParticipantRequest,
-  ParticipantRequest,
-} from '../middlewares/auth';
+import { isAuthRequest, isParticipantRequest } from '../middlewares/auth';
 import { logger } from '../middlewares/logger';
 import { ParticipantServiceInput } from '../models';
 import { ICalendarService } from '../services/calendar.service';
@@ -40,6 +35,8 @@ export class ParticipantController {
       const { slug } = req.params;
       const { nickname, password } = req.body;
 
+      const userUuid = req.userUuid;
+
       if (!slug) {
         throw Errors.BadRequest('slug가 필요합니다');
       }
@@ -58,8 +55,8 @@ export class ParticipantController {
 
       let participantServiceInput: ParticipantServiceInput;
 
-      if (req.userUuid) {
-        const userId = await this.userService.getIdUsingUuid(req.userUuid);
+      if (userUuid) {
+        const userId = await this.userService.getIdUsingUuid(userUuid);
 
         participantServiceInput = {
           role: 'guest',
@@ -88,7 +85,7 @@ export class ParticipantController {
         calendarId: slug,
         role: result.participant.role,
 
-        userUuid: req.userUuid,
+        userUuid: userUuid,
       });
 
       res.status(201).json({
@@ -123,6 +120,8 @@ export class ParticipantController {
       }
       const { slug } = req.params;
       const { nickname, password } = req.body;
+      const userUuid = req.userUuid;
+
       if (!slug) {
         throw Errors.BadRequest('slug가 필요합니다');
       }
@@ -131,8 +130,8 @@ export class ParticipantController {
       const calendar = await this.calendarService.getCalendarBySlug(slug);
 
       let result;
-      if (req.userUuid) {
-        const userId = await this.userService.getIdUsingUuid(req.userUuid);
+      if (userUuid) {
+        const userId = await this.userService.getIdUsingUuid(userUuid);
 
         result = await this.participantService.loginGuestUserAsParticipant(calendar.id, userId);
       } else {
@@ -148,7 +147,7 @@ export class ParticipantController {
         role: result.participant.role,
         calendarId: slug,
 
-        userUuid: req.userUuid,
+        userUuid: userUuid,
       });
 
       res.status(200).json({
@@ -185,7 +184,7 @@ export class ParticipantController {
 
       // 비밀번호 해시 제거
       const sanitizedParticipants = participants.map((p) => ({
-        id: p.participant_uuid,
+        uuid: p.participant_uuid,
         nickname: p.nickname,
         color_code: p.color_code,
         joined_at: p.joined_at,
@@ -218,16 +217,17 @@ export class ParticipantController {
       const { slug } = req.params;
 
       const targetUuid = req.participantUuid;
+      const userRole = req.userRole;
 
       if (!slug) {
         throw Errors.BadRequest('slug가 필요합니다');
       }
 
-      if (!targetUuid || !req.userRole) {
+      if (!targetUuid || !userRole) {
         throw Errors.Internal('인증정보가 없습니다.');
       }
 
-      if (req.userRole === 'host') {
+      if (userRole === 'host') {
         throw Errors.BadRequest('방장은 방장을 삭제할 수 없습니다 캘린더 삭제 이용.');
       }
 
@@ -273,14 +273,14 @@ export class ParticipantController {
         throw Errors.BadRequest('삭제할 타겟이 필요합니다');
       }
 
-      const participantUuid = req.participantUuid;
-      const participantRole = req.userRole;
+      const userParticipantUuid = req.participantUuid;
+      const userParticipantRole = req.userRole;
 
-      if (!participantUuid || !participantRole) {
+      if (!userParticipantUuid || !userParticipantRole) {
         throw Errors.Internal('인증 실패');
       }
 
-      if (participantRole !== 'host') {
+      if (userParticipantRole !== 'host') {
         throw Errors.Forbidden('강퇴 권한이 없음');
       }
 
@@ -288,7 +288,7 @@ export class ParticipantController {
         throw Errors.Unauthorized('잘못된 토큰');
       }
 
-      if (participantUuid === targetUuid) {
+      if (userParticipantUuid === targetUuid) {
         throw Errors.BadRequest('방장은 방장을 삭제할 수 없습니다 캘린더 삭제 이용.');
       }
 

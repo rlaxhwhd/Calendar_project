@@ -1,11 +1,17 @@
 import { TransactionManager } from '../infrastructure/transaction.manager';
 import { DateVoteStatus } from '../models/Vote';
+import { VoteType } from '../models/Vote';
 import { IDateOptionRepository } from '../repositories/dateOption.repository';
 import { IVoteRepository } from '../repositories/vote.repository';
 import { Errors } from '../utils/errors';
 
 export interface IVoteService {
-  submitVotes(participantId: number, calendarId: number, selectedDates: string[]): Promise<number>;
+  submitVotes(
+    participantId: number,
+    calendarId: number,
+    selectedDates: string[],
+    voteType?: VoteType
+  ): Promise<number>;
   getVotesByParticipant(participantId: number): Promise<any[]>;
   getVoteStatusByCalendar(calendarId: number): Promise<DateVoteStatus[]>;
   deleteVotes(participantId: number): Promise<void>;
@@ -23,7 +29,8 @@ export class VoteService implements IVoteService {
   async submitVotes(
     participantId: number,
     calendarId: number,
-    selectedDates: string[]
+    selectedDates: string[],
+    voteType: VoteType = 'available'
   ): Promise<number> {
     return TransactionManager.run(async (connection) => {
       if (!selectedDates || selectedDates.length === 0) {
@@ -55,7 +62,7 @@ export class VoteService implements IVoteService {
       const count = await this.voteRepository.upsertVotes(
         participantId,
         dateOptionIds,
-        'available', // 기본값: 가능,
+        voteType, // 기본값: 가능,
         connection
       );
 

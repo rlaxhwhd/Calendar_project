@@ -4,6 +4,7 @@ import { CalendarRepository, ICalendarRepository } from '../repositories/calenda
 import { CalendarService, ICalendarService } from '../services/calendar.service';
 import { tokenService, userService } from './auth.container';
 import { participantRepository, participantService } from './participant.container';
+import { dateOptionRepository } from './vote.container';
 
 const db = pool;
 
@@ -11,7 +12,8 @@ export const calendarRepository: ICalendarRepository = new CalendarRepository(db
 
 export const calendarService: ICalendarService = new CalendarService(
   calendarRepository,
-  participantRepository
+  participantRepository,
+  dateOptionRepository
 );
 export const calendarController = new CalendarController(
   calendarService,

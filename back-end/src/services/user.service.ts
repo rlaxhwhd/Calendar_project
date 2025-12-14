@@ -5,8 +5,8 @@ export interface IUserService {
 }
 
 export class UserService implements IUserService {
-  constructor(private userRepoitory: IUserRepository) {}
+  constructor(private userRepository: IUserRepository) {}
   async getIdUsingUuid(userUuid: string): Promise<number> {
-    return this.userRepoitory.getIdUsingUuid(userUuid);
+    return this.userRepository.getIdUsingUuid(userUuid);
   }
 }

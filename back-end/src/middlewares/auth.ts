@@ -118,9 +118,12 @@ export const authorize = (...allowedRoles: string[]) => {
 // Optional 인증 (로그인 여부와 관계없이)
 export const optionalAuth = asyncHandler(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return next();
+    }
 
+    try {
       if (token) {
         const decoded = tokenService.verifyMainToken(token);
         req.userUuid = decoded.sub;
@@ -129,8 +132,7 @@ export const optionalAuth = asyncHandler(
 
       next();
     } catch (error) {
-      // 토큰이 잘못되어도 계속 진행
-      next();
+      next(Errors.Unauthorized('허용되지 않은 토큰'));
     }
   }
 );

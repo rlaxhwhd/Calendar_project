@@ -4,6 +4,7 @@ import { app } from './app';
 import { connectDatabaseWithRetry } from './config/database';
 import { env } from './config/env';
 import { connectRedis } from './config/redis';
+import { cronService } from './containers/cron.container';
 import { initializeSocketIO } from './sockets';
 import { setupGracefulShutdown } from './utils/shutdownHandler';
 
@@ -19,7 +20,10 @@ async function startServer() {
     const server = http.createServer(app);
     initializeSocketIO(server);
 
-    // 4. 서버 시작
+    cronService.start();
+    console.log('[Cron] 서비스 시작 (매일 새벽 4시 실행)');
+
+    //서버 시작
     server.listen(env.PORT, () => {
       console.log(`
 ╔═══════════════════════════════╗

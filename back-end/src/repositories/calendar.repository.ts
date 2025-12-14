@@ -15,6 +15,8 @@ export interface ICalendarRepository {
   delete(id: number, connection?: PoolConnection): Promise<boolean>;
   close(id: number, connection?: PoolConnection): Promise<boolean>;
   slugExists(slug: string, connection?: PoolConnection): Promise<boolean>;
+  findEndedAndOpen(connection?: PoolConnection): Promise<Calendar[]>;
+  findExpired(connection?: PoolConnection): Promise<Calendar[]>;
 }
 
 export class CalendarRepository implements ICalendarRepository {
@@ -204,6 +206,26 @@ export class CalendarRepository implements ICalendarRepository {
     );
 
     return rows[0].count > 0;
+  }
+
+  async findEndedAndOpen(connection?: PoolConnection): Promise<Calendar[]> {
+    const poolToUse = connection || this.pool;
+
+    const [rows] = await poolToUse.execute<RowDataPacket[]>(
+      'SELECT * FROM calendars WHERE is_closed = FALSE AND end_date < CURDATE()'
+    );
+
+    return rows.map((row) => this.mapToCalendar(row));
+  }
+
+  async findExpired(connection?: PoolConnection): Promise<Calendar[]> {
+    const poolToUse = connection || this.pool;
+
+    const [rows] = await poolToUse.execute<RowDataPacket[]>(
+      'SELECT * FROM calendars WHERE expired_at < NOW()'
+    );
+
+    return rows.map((row) => this.mapToCalendar(row));
   }
 
   /**
