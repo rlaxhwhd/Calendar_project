@@ -11,9 +11,13 @@ import { setupGracefulShutdown } from './utils/shutdownHandler';
 // 서버 시작
 async function startServer() {
   try {
-    // Redis 연결
+    console.log('서버 초기화');
+
+    console.log('reids 연결 시도');
     await connectRedis();
-    // Database 연결
+    console.log('redis 연결 성공');
+
+    console.log('db 연결 시도');
     await connectDatabaseWithRetry();
     console.log('reids, db 연결성공');
 
@@ -34,6 +38,14 @@ async function startServer() {
 ║  💾 Database: 연결됨           ║
 ╚═══════════════════════════════╝
       `);
+    });
+
+    process.on('uncaughtException', (err) => {
+      console.error('UNCAUGHT EXCEPTION:', err);
+    });
+
+    process.on('unhandledRejection', (reason) => {
+      console.error('UNHANDLED REJECTION:', reason);
     });
 
     setupGracefulShutdown(server);

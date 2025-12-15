@@ -2,8 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
 
 import { env } from '../config/env';
-import { tokenService } from '../containers/auth.container';
-import { participantService } from '../containers/participant.container';
+import { participantService, tokenService } from '../containers/service.container';
 import { CustomSocket } from '../types/socket.types';
 import { Errors } from '../utils/errors';
 import { CalendarSocketController } from './socket.controller';

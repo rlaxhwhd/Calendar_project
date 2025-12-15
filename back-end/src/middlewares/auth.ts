@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { tokenService } from '../containers/auth.container';
+import { tokenService } from '../containers/service.container';
 import { MainTokenPayload, ParticipantTokenPayload } from '../types/token.types';
 import { Errors } from '../utils/errors';
 import { asyncHandler } from './errorHandler';

@@ -4,7 +4,6 @@ import session from 'express-session';
 
 import { env } from '../config/env';
 
-// 모든 미들웨어를 한 곳에서 export
 export { authenticateParticipant, authenticateUser, authorize, optionalAuth } from './auth';
 export { corsMiddleware } from './cors';
 export { errorHandler, notFoundHandler } from './errorHandler';

@@ -140,7 +140,7 @@ export class ParticipantService implements IParticipantService {
       nickname.trim()
     );
 
-    if (!participant) {
+    if (!participant || !participant.password_hash) {
       throw Errors.Unauthorized('닉네임 또는 비밀번호가 일치하지 않습니다');
     }
 

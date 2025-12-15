@@ -50,6 +50,14 @@ function validateEnv(): EnvConfig {
     );
   }
 
+  const connectionLimit = Number(process.env.DB_CONNECTION_LIMIT);
+
+  if (!Number.isInteger(connectionLimit) || connectionLimit <= 0) {
+    throw new Error(
+      `DB_CONNECTION_LIMIT는 1 이상의 정수여야 합니다. 현재 값: ${process.env.DB_CONNECTION_LIMIT}`
+    );
+  }
+
   return {
     PORT: parseInt(process.env.PORT!, 10),
     NODE_ENV: process.env.NODE_ENV!,
@@ -66,7 +74,7 @@ function validateEnv(): EnvConfig {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
     BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:4000',
     SIGNUP_MODE: process.env.SIGNUP_MODE!,
-    DB_CONNECTION_LIMIT: parseInt(process.env.DB_CONNECTION_LIMIT!, 10),
+    DB_CONNECTION_LIMIT: connectionLimit,
   };
 }
 

@@ -20,14 +20,14 @@
     // "noLib": true,                                    /* Disable including any library files, including the default lib.d.ts. */
     // "useDefineForClassFields": true,                  /* Emit ECMAScript-standard-compliant class fields. */
     // "rootDir": "./",                                  /* Specify the root folder within your source files. */
-    "moduleResolution": "node", /* Specify how TypeScript looks up a file from a given module specifier. */
+    "moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": [
       "./@types",
       "./node_modules/@types"
-    ], /* Specify multiple folders that act like `./node_modules/@types`. */
+    ] /* Specify multiple folders that act like `./node_modules/@types`. */,
     // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
     // "resolveJsonModule": true,                        /* Enable importing .json files */
@@ -63,12 +63,12 @@
     /* Interop Constraints */
     // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
     // "allowSyntheticDefaultImports": true,             /* Allow 'import x from y' when a module doesn't have a default export. */
-    "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
     // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
-    "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     /* Type Checking */
     // "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied `any` type.. */
-    "strictNullChecks": true, /* When type checking, take into account `null` and `undefined`. */
+    "strictNullChecks": true /* When type checking, take into account `null` and `undefined`. */,
     // "strictFunctionTypes": true,                      /* When assigning functions, check to ensure parameters and the return values are subtype-compatible. */
     // "strictBindCallApply": true,                      /* Check that the arguments for `bind`, `call`, and `apply` methods match the original function. */
     // "strictPropertyInitialization": true,             /* Check for class properties that are declared but not set in the constructor. */
@@ -111,19 +111,14 @@
     /* Specify an output folder for all emitted files. */
     "outDir": "./dist",
     // https://www.typescriptlang.org/tsconfig#typeRoots
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
+    "typeRoots": ["./types", "./node_modules/@types"],
     // https://www.typescriptlang.org/tsconfig#baseUrl
-    "baseUrl": "./", /* Base directory to resolve non-absolute module names. */
+    "baseUrl": "./" /* Base directory to resolve non-absolute module names. */,
     // https://www.typescriptlang.org/tsconfig#paths
     "paths": {
-      "@jsLib/*": [
-        "src/*"
-      ],
+      "@jsLib/*": ["src/*"]
     },
-    "noImplicitThis": true, /* Enable error reporting when `this` is given the type `any`. */
+    "noImplicitThis": true /* Enable error reporting when `this` is given the type `any`. */,
     //                                          +-------------------------
     // -----------------------------------------+ React 관련
     //                                          +-------------------------
@@ -133,10 +128,7 @@
   //                                          +-------------------------
   // -----------------------------------------+ include
   //                                          +-------------------------
-  "include": [
-    "./src/**/*",
-    "../front-end/src/component/BillingMangaement.tsx"
-  ],
+  "include": ["./src/**/*", "../front-end/src/component/BillingMangaement.tsx"],
   //                                          +-------------------------
   // -----------------------------------------+ exclude
   //                                          +-------------------------
@@ -144,5 +136,7 @@
     "node_modules",
     "_Trash",
     "**/_Trash" // 하위 폴더에 있는 _Trash 폴더도 추가
+    // "**/__tests__/**",
+    // "**/*.test.ts"
   ]
 }

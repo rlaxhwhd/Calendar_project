@@ -49,7 +49,6 @@ export interface IRedisBlacklistRepository {
 
 export interface ITokenService {
   verifySignupToken(token: string): SignupTokenPayload;
-  generateSignupToken(payload: SignupTokenPayload, expiresIn?: string): string;
   verifyMainToken(token: string): MainTokenPayload;
   verifyUserToken(token: string): UserTokenPayload;
 
