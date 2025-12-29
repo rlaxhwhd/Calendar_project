@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(taskkill /F /PID 23876)",
+      "Bash(wmic process where ProcessId=23876 delete)",
+      "Bash(tasklist:*)",
+      "Bash(back-end/src/web.ts)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(wmic process where \"name=''node.exe''\" delete)",
+      "Bash(if exist node_modules.cache rd /s /q node_modules.cache)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge:*)",
+      "Bash(docker system prune:*)",
+      "Bash(docker --version:*)",
+      "Bash(docker-compose:*)",
+      "Bash(wsl --update)",
+      "Bash(wsl --version:*)",
+      "Bash(wsl --shutdown)",
+      "Bash(dir:*)",
+      "Bash(timeout /t 5)",
+      "Bash(findstr:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout /t 10)",
+      "Bash(npm run build:*)",
+      "Bash(timeout /t 3)",
+      "Bash(docker logs:*)",
+      "Bash(docker exec:*)",
+      "Bash(ping:*)",
+      "Bash(docker restart:*)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git config:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

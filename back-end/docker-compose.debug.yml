@@ -1,0 +1,5 @@
+services:
+  app:
+    ports:
+      - '9229:9229'
+    command: npm run dev:debug
